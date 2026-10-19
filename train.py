@@ -31,7 +31,7 @@ def main():
     knn_scores = knn.score_users(users, train_mat)
 
     # --- two-tower ---
-    model = train_two_tower(data)
+    model = train_two_tower(data, epochs=10)
     item_vecs = all_item_vectors(model, data)
     tt_scores = user_vectors(model, data, users) @ item_vecs.T
 
@@ -47,8 +47,9 @@ def main():
     # --- second-stage ranker, trained on val, applied to test ---
     def topn_candidates(scores):
         s = scores.copy()
+        hist_map = data.histories("train")
         for j, u in enumerate(users):
-            s[j, data.histories("train")[u]] = -np.inf
+            s[j, hist_map[u]] = -np.inf
         part = np.argpartition(-s, TOPN - 1, axis=1)[:, :TOPN]
         order = np.argsort(-np.take_along_axis(s, part, axis=1), axis=1)
         cands = np.take_along_axis(part, order, axis=1)
