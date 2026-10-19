@@ -29,7 +29,8 @@ def recall_ndcg(scores, train_hist, target_item, ks=(10, 50)):
 def evaluate_model(name, scores, data, users, split="test", ks=(10, 50)):
     held = data.val if split == "val" else data.test
     target = held.set_index("user").loc[users].item.to_numpy()
-    train_hist = [data.histories("train")[u] for u in users]
+    hist_map = data.histories("train")
+    train_hist = [hist_map[u] for u in users]
     metrics, ranked = recall_ndcg(scores.copy(), train_hist, target, ks)
     row = {"model": name, "split": split, **{k: round(v, 4) for k, v in metrics.items()}}
     return row, ranked
